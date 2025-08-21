@@ -90,6 +90,7 @@ async function joinGame(gameType) {
 
 // UI Wiring
 document.addEventListener("DOMContentLoaded", () => {
+    console.log("1. DOM loaded. Starting app initialization.");
     document.getElementById("gamesBtn")?.addEventListener("click", () => switchScreen("gamesScreen"));
     document.getElementById("userGamesBtn")?.addEventListener("click", () => switchScreen("gamesScreen"));
     document.getElementById("backToQuizBtn")?.addEventListener("click", () => switchScreen("startScreen"));
