@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quiz App</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;900&family=Open+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<!-- Added navigation header with authentication -->
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-brand">
+            <span class="brand-icon">🧠</span>
+            <span class="brand-text">QuizMaster</span>
+        </div>
+
+        <div class="nav-menu">
+            <div id="guestNav" class="nav-section">
+                <button id="gamesBtn" class="nav-btn">Games</button>
+                <button id="loginBtn" class="nav-btn">Login</button>
+                <button id="registerBtn" class="nav-btn primary">Sign Up</button>
+            </div>
+
+            <div id="userNav" class="nav-section hidden">
+                <div class="user-info">
+                    <span class="user-avatar" id="userAvatar">👤</span>
+                    <span class="user-name" id="navUserName">User</span>
+                    <span class="user-role" id="userRole">user</span>
+                </div>
+                <button id="userGamesBtn" class="nav-btn">Games</button>
+                <button id="createQuizBtn" class="nav-btn create-btn hidden">Create Quiz</button>
+                <button id="adminPanelBtn" class="nav-btn admin-btn hidden">Admin</button>
+                <button id="userProfileBtn" class="nav-btn profile-btn hidden">Profile</button>
+                <button id="logoutBtn" class="nav-btn">Logout</button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Start Screen -->
+<div id="startScreen" class="screen active">
+    <div class="container">
+        <div class="welcome-card">
+            <div class="quiz-icon">🧠</div>
+            <h1 class="main-title">Interactive Quiz Challenge</h1>
+            <p class="subtitle">Test your knowledge and compete with others!</p>
+
+            <form id="userForm" class="user-form">
+                <div class="form-group">
+                    <label for="userName">Your Name</label>
+                    <input type="text" id="userName" name="userName" required placeholder="Enter your name">
+                </div>
+
+                <div class="form-group">
+                    <label for="userEmail">Email Address</label>
+                    <input type="email" id="userEmail" name="userEmail" required placeholder="Enter your email">
+                </div>
+
+                <div class="form-group">
+                    <label for="topicSelect">Choose Topic</label>
+                    <select id="topicSelect" name="topicSelect" required>
+                        <option value="">Select a topic...</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="start-btn">
+                    <span>Start Quiz</span>
+                    <div class="btn-shine"></div>
+                </button>
+            </form>
+
+            <div class="stats-preview">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalQuestions">0</span>
+                    <span class="stat-label">Questions</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="totalParticipants">0</span>
+                    <span class="stat-label">Participants</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quiz Screen -->
+<div id="quizScreen" class="screen">
+    <div class="container">
+        <div class="quiz-header">
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <span class="progress-text" id="progressText">Question 1 of 10</span>
+            </div>
+
+            <div class="quiz-stats">
+                <div class="stat">
+                    <span class="stat-icon">⚡</span>
+                    <span id="currentScore">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-icon">🎯</span>
+                    <span id="accuracy">100%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="question-card">
+            <div class="question-number" id="questionNumber">Question 1</div>
+            <h2 class="question-text" id="questionText">Loading question...</h2>
+
+            <div class="options-container" id="optionsContainer">
+                <!-- Options will be dynamically generated -->
+            </div>
+
+            <div class="question-actions">
+                <button id="nextBtn" class="next-btn" disabled>
+                    Next Question
+                    <span class="btn-arrow">→</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="feedback-popup" id="feedbackPopup">
+            <div class="feedback-content">
+                <div class="feedback-icon" id="feedbackIcon">✅</div>
+                <div class="feedback-text" id="feedbackText">Correct!</div>
+                <div class="feedback-explanation" id="feedbackExplanation"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Results Screen -->
+<div id="resultsScreen" class="screen">
+    <div class="container">
+        <div class="results-card">
+            <div class="results-header">
+                <div class="trophy-icon" id="trophyIcon">🏆</div>
+                <h1 class="results-title" id="resultsTitle">Quiz Complete!</h1>
+                <p class="results-subtitle" id="resultsSubtitle">Great job on completing the quiz!</p>
+            </div>
+
+            <div class="score-display">
+                <div class="final-score">
+                    <span class="score-number" id="finalScore">0</span>
+                    <span class="score-total" id="scoreTotal">/ 10</span>
+                </div>
+                <div class="score-percentage" id="scorePercentage">0%</div>
+            </div>
+
+            <div class="performance-metrics">
+                <div class="metric">
+                    <span class="metric-label">Correct Answers</span>
+                    <span class="metric-value" id="correctAnswers">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Time Taken</span>
+                    <span class="metric-value" id="timeTaken">0:00</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Accuracy</span>
+                    <span class="metric-value" id="finalAccuracy">0%</span>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="resultsChart"></canvas>
+            </div>
+
+            <div class="results-actions">
+                <button id="retakeBtn" class="action-btn primary">
+                    <span>Retake Quiz</span>
+                </button>
+                <button id="shareBtn" class="action-btn secondary">
+                    <span>Share Results</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Added Games Selection Screen -->
+<!-- Games Selection Screen -->
+<div id="gamesScreen" class="screen">
+    <div class="container">
+        <div class="games-header">
+            <button id="backToQuizBtn" class="back-btn">← Back to Quiz</button>
+            <h1 class="games-title">Multiplayer Games</h1>
+            <p class="games-subtitle">Challenge friends in real-time multiplayer games!</p>
+        </div>
+
+        <div class="games-grid">
+            <div class="game-card" data-game="tictactoe">
+                <div class="game-icon">⭕</div>
+                <h3 class="game-name">Tic-Tac-Toe</h3>
+                <p class="game-description">Classic 3x3 grid game. Get three in a row to win!</p>
+                <div class="game-stats">
+                    <span class="stat">👥 2 Players</span>
+                    <span class="stat">⏱️ Quick Game</span>
+                </div>
+                <button class="play-game-btn" data-game="tictactoe">Play Now</button>
+            </div>
+
+            <div class="game-card" data-game="connect4">
+                <div class="game-icon">🔴</div>
+                <h3 class="game-name">Connect 4</h3>
+                <p class="game-description">Drop pieces to get four in a row vertically, horizontally, or diagonally!</p>
+                <div class="game-stats">
+                    <span class="stat">👥 2 Players</span>
+                    <span class="stat">⏱️ 5-10 min</span>
+                </div>
+                <button class="play-game-btn" data-game="connect4">Play Now</button>
+            </div>
+        </div>
+
+        <div class="rooms-status">
+            <h3>Room Status</h3>
+            <div class="status-grid">
+                <div class="status-item">
+                    <span class="status-label">Tic-Tac-Toe Rooms</span>
+                    <span class="status-value" id="tictactoeRooms">0/20 Active</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Connect 4 Rooms</span>
+                    <span class="status-value" id="connect4Rooms">0/20 Active</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Added Game Room Screen -->
+<!-- Game Room Screen -->
+<div id="gameRoomScreen" class="screen">
+    <div class="container">
+        <div class="game-room-header">
+            <button id="leaveGameBtn" class="back-btn">← Leave Game</button>
+            <div class="room-info">
+                <h2 id="gameRoomTitle">Tic-Tac-Toe</h2>
+                <span class="room-id">Room: <span id="currentRoomId">-</span></span>
+            </div>
+            <div class="game-status">
+                <span id="gameStatusText">Waiting for players...</span>
+            </div>
+        </div>
+
+        <div class="players-info">
+            <div class="player-card" id="player1Card">
+                <div class="player-avatar">👤</div>
+                <div class="player-details">
+                    <span class="player-name" id="player1Name">Waiting...</span>
+                    <span class="player-role">Player 1</span>
+                </div>
+                <div class="player-symbol" id="player1Symbol">X</div>
+            </div>
+
+            <div class="vs-divider">VS</div>
+
+            <div class="player-card" id="player2Card">
+                <div class="player-avatar">👤</div>
+                <div class="player-details">
+                    <span class="player-name" id="player2Name">Waiting...</span>
+                    <span class="player-role">Player 2</span>
+                </div>
+                <div class="player-symbol" id="player2Symbol">O</div>
+            </div>
+        </div>
+
+        <!-- Added game boards for both games -->
+        <!-- Tic-Tac-Toe Game Board -->
+        <div id="tictactoeBoard" class="game-board hidden">
+            <div class="board-container">
+                <div class="tictactoe-grid">
+                    <div class="cell" data-cell="0"></div>
+                    <div class="cell" data-cell="1"></div>
+                    <div class="cell" data-cell="2"></div>
+                    <div class="cell" data-cell="3"></div>
+                    <div class="cell" data-cell="4"></div>
+                    <div class="cell" data-cell="5"></div>
+                    <div class="cell" data-cell="6"></div>
+                    <div class="cell" data-cell="7"></div>
+                    <div class="cell" data-cell="8"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Connect 4 Game Board -->
+        <div id="connect4Board" class="game-board hidden">
+            <div class="board-container">
+                <div class="connect4-grid">
+                    <!-- 6 rows x 7 columns = 42 cells -->
+                    <div class="connect4-row">
+                        <div class="connect4-cell" data-row="0" data-col="0"></div>
+                        <div class="connect4-cell" data-row="0" data-col="1"></div>
+                        <div class="connect4-cell" data-row="0" data-col="2"></div>
+                        <div class="connect4-cell" data-row="0" data-col="3"></div>
+                        <div class="connect4-cell" data-row="0" data-col="4"></div>
+                        <div class="connect4-cell" data-row="0" data-col="5"></div>
+                        <div class="connect4-cell" data-row="0" data-col="6"></div>
+                    </div>
+                    <div class="connect4-row">
+                        <div class="connect4-cell" data-row="1" data-col="0"></div>
+                        <div class="connect4-cell" data-row="1" data-col="1"></div>
+                        <div class="connect4-cell" data-row="1" data-col="2"></div>
+                        <div class="connect4-cell" data-row="1" data-col="3"></div>
+                        <div class="connect4-cell" data-row="1" data-col="4"></div>
+                        <div class="connect4-cell" data-row="1" data-col="5"></div>
+                        <div class="connect4-cell" data-row="1" data-col="6"></div>
+                    </div>
+                    <div class="connect4-row">
+                        <div class="connect4-cell" data-row="2" data-col="0"></div>
+                        <div class="connect4-cell" data-row="2" data-col="1"></div>
+                        <div class="connect4-cell" data-row="2" data-col="2"></div>
+                        <div class="connect4-cell" data-row="2" data-col="3"></div>
+                        <div class="connect4-cell" data-row="2" data-col="4"></div>
+                        <div class="connect4-cell" data-row="2" data-col="5"></div>
+                        <div class="connect4-cell" data-row="2" data-col="6"></div>
+                    </div>
+                    <div class="connect4-row">
+                        <div class="connect4-cell" data-row="3" data-col="0"></div>
+                        <div class="connect4-cell" data-row="3" data-col="1"></div>
+                        <div class="connect4-cell" data-row="3" data-col="2"></div>
+                        <div class="connect4-cell" data-row="3" data-col="3"></div>
+                        <div class="connect4-cell" data-row="3" data-col="4"></div>
+                        <div class="connect4-cell" data-row="3" data-col="5"></div>
+                        <div class="connect4-cell" data-row="3" data-col="6"></div>
+                    </div>
+                    <div class="connect4-row">
+                        <div class="connect4-cell" data-row="4" data-col="0"></div>
+                        <div class="connect4-cell" data-row="4" data-col="1"></div>
+                        <div class="connect4-cell" data-row="4" data-col="2"></div>
+                        <div class="connect4-cell" data-row="4" data-col="3"></div>
+                        <div class="connect4-cell" data-row="4" data-col="4"></div>
+                        <div class="connect4-cell" data-row="4" data-col="5"></div>
+                        <div class="connect4-cell" data-row="4" data-col="6"></div>
+                    </div>
+                    <div class="connect4-row">
+                        <div class="connect4-cell" data-row="5" data-col="0"></div>
+                        <div class="connect4-cell" data-row="5" data-col="1"></div>
+                        <div class="connect4-cell" data-row="5" data-col="2"></div>
+                        <div class="connect4-cell" data-row="5" data-col="3"></div>
+                        <div class="connect4-cell" data-row="5" data-col="4"></div>
+                        <div class="connect4-cell" data-row="5" data-col="5"></div>
+                        <div class="connect4-cell" data-row="5" data-col="6"></div>
+                    </div>
+                </div>
+                <div class="connect4-columns">
+                    <button class="column-btn" data-col="0">↓</button>
+                    <button class="column-btn" data-col="1">↓</button>
+                    <button class="column-btn" data-col="2">↓</button>
+                    <button class="column-btn" data-col="3">↓</button>
+                    <button class="column-btn" data-col="4">↓</button>
+                    <button class="column-btn" data-col="5">↓</button>
+                    <button class="column-btn" data-col="6">↓</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-actions">
+            <button id="shareRoomBtn" class="action-btn secondary">Share Room</button>
+            <button id="replayGameBtn" class="action-btn primary hidden">Play Again</button>
+            <button id="quitGameBtn" class="action-btn danger">Quit Game</button>
+        </div>
+
+        <div class="game-messages">
+            <div id="gameMessage" class="game-message"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Added authentication modals -->
+<!-- Login Modal -->
+<div id="loginModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Login to Your Account</h2>
+            <button class="modal-close" id="loginClose">&times;</button>
+        </div>
+        <form id="loginForm" class="auth-form">
+            <div class="form-group">
+                <label for="loginEmail">Email</label>
+                <input type="email" id="loginEmail" required placeholder="Enter your email">
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" required placeholder="Enter your password">
+            </div>
+            <button type="submit" class="auth-btn">Login</button>
+        </form>
+        <p class="auth-switch">Don't have an account? <a href="#" id="switchToRegister">Sign up here</a></p>
+    </div>
+</div>
+
+<!-- Register Modal -->
+<div id="registerModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Create Your Account</h2>
+            <button class="modal-close" id="registerClose">&times;</button>
+        </div>
+        <form id="registerForm" class="auth-form">
+            <div class="form-group">
+                <label for="regName">Full Name</label>
+                <input type="text" id="regName" required placeholder="Enter your full name">
+            </div>
+            <div class="form-group">
+                <label for="regEmail">Email</label>
+                <input type="email" id="regEmail" required placeholder="Enter your email">
+            </div>
+            <div class="form-group">
+                <label for="regPassword">Password</label>
+                <input type="password" id="regPassword" required placeholder="Create a password">
+            </div>
+            <div class="form-group">
+                <label for="regConfirmPassword">Confirm Password</label>
+                <input type="password" id="regConfirmPassword" required placeholder="Confirm your password">
+            </div>
+            <button type="submit" class="auth-btn">Create Account</button>
+        </form>
+        <p class="auth-switch">Already have an account? <a href="#" id="switchToLogin">Login here</a></p>
+    </div>
+</div>
+
+<!-- Added quiz creation modal -->
+<!-- Quiz Creation Modal -->
+<div id="quizCreationModal" class="modal large-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Create New Quiz</h2>
+            <button class="modal-close" id="quizCreationClose">&times;</button>
+        </div>
+        <form id="quizCreationForm" class="quiz-form">
+            <div class="form-section">
+                <h3>Quiz Details</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="quizTopic">Topic</label>
+                        <select id="quizTopic" required>
+                            <option value="">Select topic...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="quizContributor">Your Name</label>
+                        <input type="text" id="quizContributor" required placeholder="Your name">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Question</h3>
+                <div class="form-group">
+                    <label for="questionText">Question</label>
+                    <textarea id="questionText" required placeholder="Enter your question"></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Answer Options</h3>
+                <div id="optionsSection">
+                    <div class="option-group">
+                        <label>Option 1</label>
+                        <input type="text" class="option-input" required placeholder="Enter option 1">
+                        <label class="correct-label">
+                            <input type="radio" name="correctAnswer" value="0" required>
+                            Correct Answer
+                        </label>
+                    </div>
+                    <div class="option-group">
+                        <label>Option 2</label>
+                        <input type="text" class="option-input" required placeholder="Enter option 2">
+                        <label class="correct-label">
+                            <input type="radio" name="correctAnswer" value="1">
+                            Correct Answer
+                        </label>
+                    </div>
+                    <div class="option-group">
+                        <label>Option 3</label>
+                        <input type="text" class="option-input" placeholder="Enter option 3 (optional)">
+                        <label class="correct-label">
+                            <input type="radio" name="correctAnswer" value="2">
+                            Correct Answer
+                        </label>
+                    </div>
+                    <div class="option-group">
+                        <label>Option 4</label>
+                        <input type="text" class="option-input" placeholder="Enter option 4 (optional)">
+                        <label class="correct-label">
+                            <input type="radio" name="correctAnswer" value="3">
+                            Correct Answer
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="explanation">Explanation (Optional)</label>
+                    <textarea id="explanation" placeholder="Explain why this is the correct answer"></textarea>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" id="cancelQuizCreation" class="cancel-btn">Cancel</button>
+                <button type="submit" class="submit-btn">Submit Quiz for Review</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Added admin panel modal -->
+<!-- Admin Panel Modal -->
+<div id="adminModal" class="modal large-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Admin Panel</h2>
+            <button class="modal-close" id="adminClose">&times;</button>
+        </div>
+        <div class="admin-tabs">
+            <button class="tab-btn active" data-tab="pending">Pending Quizzes</button>
+            <button class="tab-btn" data-tab="users">User Management</button>
+        </div>
+
+        <div id="pendingTab" class="tab-content active">
+            <div id="pendingQuizzes" class="pending-list">
+                <!-- Pending quizzes will be loaded here -->
+            </div>
+        </div>
+
+        <div id="usersTab" class="tab-content">
+            <div id="usersList" class="users-list">
+                <!-- Users will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Added user profile modal -->
+<!-- User Profile Modal -->
+<div id="userProfileModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>User Profile</h2>
+            <button class="modal-close" id="userProfileClose">&times;</button>
+        </div>
+        <div class="profile-tabs">
+            <button class="profile-tab-btn active" data-tab="profile">Profile</button>
+            <button class="profile-tab-btn" data-tab="stats">Statistics</button>
+            <button class="profile-tab-btn" data-tab="settings">Settings</button>
+        </div>
+
+        <div id="profileTab" class="profile-tab-content active">
+            <form id="profileUpdateForm" class="profile-form">
+                <div class="form-group">
+                    <label for="profileName">Full Name</label>
+                    <input type="text" id="profileName" required placeholder="Enter your full name">
+                </div>
+                <div class="form-group">
+                    <label for="profileEmail">Email</label>
+                    <input type="email" id="profileEmail" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="currentPassword">Current Password</label>
+                    <input type="password" id="currentPassword" placeholder="Enter current password to save changes">
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">New Password (Optional)</label>
+                    <input type="password" id="newPassword" placeholder="Enter new password">
+                </div>
+                <div class="form-group">
+                    <label for="confirmNewPassword">Confirm New Password</label>
+                    <input type="password" id="confirmNewPassword" placeholder="Confirm new password">
+                </div>
+                <button type="submit" class="profile-save-btn">Save Changes</button>
+            </form>
+        </div>
+
+        <div id="statsTab" class="profile-tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-value" id="userTotalQuizzes">0</div>
+                    <div class="stat-label">Quizzes Taken</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-value" id="userAverageScore">0%</div>
+                    <div class="stat-label">Average Score</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🏆</div>
+                    <div class="stat-value" id="userBestScore">0%</div>
+                    <div class="stat-label">Best Score</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-value" id="userFavoriteCategory">-</div>
+                    <div class="stat-label">Favorite Category</div>
+                </div>
+            </div>
+
+            <div class="recent-activity">
+                <h3>Recent Activity</h3>
+                <div id="userRecentActivity" class="activity-list">
+                    <!-- Recent activity will be populated here -->
+                </div>
+            </div>
+
+            <div class="achievements">
+                <h3>Achievements</h3>
+                <div id="userAchievements" class="achievements-grid">
+                    <!-- Achievements will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <div id="settingsTab" class="profile-tab-content">
+            <div class="settings-section">
+                <h3>Preferences</h3>
+                <div class="setting-item">
+                    <label class="setting-label">
+                        <input type="checkbox" id="soundEffects" checked>
+                        <span class="checkmark"></span>
+                        Sound Effects
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label class="setting-label">
+                        <input type="checkbox" id="confettiEffects" checked>
+                        <span class="checkmark"></span>
+                        Confetti Effects
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label class="setting-label">
+                        <input type="checkbox" id="emailNotifications" checked>
+                        <span class="checkmark"></span>
+                        Email Notifications
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>Quiz Preferences</h3>
+                <div class="setting-item">
+                    <label for="defaultDifficulty">Default Difficulty</label>
+                    <select id="defaultDifficulty">
+                        <option value="easy">Easy</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label for="questionsPerQuiz">Questions Per Quiz</label>
+                    <select id="questionsPerQuiz">
+                        <option value="5">5 Questions</option>
+                        <option value="10" selected>10 Questions</option>
+                        <option value="15">15 Questions</option>
+                        <option value="20">20 Questions</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="settings-section danger-zone">
+                <h3>Danger Zone</h3>
+                <button id="clearDataBtn" class="danger-btn">Clear All Data</button>
+                <button id="deleteAccountBtn" class="danger-btn">Delete Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confetti Canvas -->
+<canvas id="confettiCanvas"></canvas>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <p>Loading quiz data...</p>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
