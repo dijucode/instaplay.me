@@ -5,9 +5,7 @@ const CONFIG = {
     SHEETS_ID: "1hi_iiN08N0nQ6gVLJPjDzbLIz6lZjCMB75U9Q2GadWk", // your spreadsheet ID
 
     // Google Apps Script Web App URL (replace with your latest deployment URL)
-    APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbx95C6sJfaJUoO-hdqDhUIq-IuFQNdL8LFKyjulkyHzN0YamE06KgQGJ4qInyBCoTtUjQ/exec",
-
-    // GIDs for each sheet (from your sheet URLs)
+    APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycby1EGLYacvRMftUlS77xg_oNI4KcD_BgVexxaXRluj-nsRyxGoZBZRw8Ozl0QV1rgi0Ng/exec",
     TOPICS_GID: "0",
     QUIZZES_GID: "96315669",
     RESPONSES_GID: "1061310588",
@@ -18,9 +16,6 @@ const CONFIG = {
     GAME_HISTORY_GID: "2019136867"
 };
 
-// =======================
-// API Helpers
-// =======================
 const API_BASE = CONFIG.APPS_SCRIPT_URL;
 
 // Get available rooms
@@ -59,69 +54,46 @@ async function saveGameHistory(gameData) {
     return await res.json();
 }
 
-// =======================
-// Game UI Functions
-// =======================
-function leaveGame() {
-    showGameMessage("You left the game", "info");
-}
-
-function shareRoom() {
-    navigator.clipboard.writeText(window.location.href);
-    showGameMessage("Room link copied to clipboard!", "success");
-}
-
-function replayGame() {
-    showGameMessage("Replay not implemented yet.", "warning");
-}
-
+// UI Helpers
 function showGameMessage(message, type) {
     alert(`[${type.toUpperCase()}] ${message}`);
 }
 
-function showGameRoom() {
-    console.log("Showing game room UI...");
+// Screen Switching Helper
+function switchScreen(screenId) {
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    const target = document.getElementById(screenId);
+    if (target) target.classList.add("active");
 }
 
-function updateGameUI() {
-    console.log("Updating game UI...");
-}
+// Game Join Flow
+async function joinGame(gameType) {
+    showGameMessage(`Joining ${gameType} room...`, "info");
 
-// =======================
-// Example Usage
-// =======================
-async function testAPIs() {
-    console.log("Fetching available TicTacToe rooms...");
-    const rooms = await fetchAvailableRooms("tictactoe");
-    console.log("Rooms:", rooms);
-
+    const rooms = await fetchAvailableRooms(gameType);
+    let room;
     if (rooms.length > 0) {
-        const roomId = rooms[0].room_id;
-        console.log(`Fetching room ${roomId}...`);
-        const room = await fetchRoom("tictactoe", roomId);
-        console.log("Room data:", room);
-
-        console.log("Updating room...");
-        const result = await updateRoom("tictactoe", roomId, { status: "waiting", player1: "UserA" });
-        console.log("Update result:", result);
+        room = rooms[0];
+        await updateRoom(gameType, room.room_id, { status: "active", player2: "Guest" });
+    } else {
+        const result = await updateRoom(gameType, Date.now().toString(), { status: "waiting", player1: "Guest" });
+        room = { room_id: result.roomId, status: "waiting", player1: "Guest" };
     }
+
+    document.getElementById("currentRoomId").textContent = room.room_id;
+    document.getElementById("gameRoomTitle").textContent = gameType === "tictactoe" ? "Tic-Tac-Toe" : "Connect 4";
+    switchScreen("gameRoomScreen");
+
+    document.getElementById("tictactoeBoard").classList.toggle("hidden", gameType !== "tictactoe");
+    document.getElementById("connect4Board").classList.toggle("hidden", gameType !== "connect4");
 }
 
-// =======================
 // UI Wiring
-// =======================
-
 document.addEventListener("DOMContentLoaded", () => {
-    // --- Navigation ---
-    const gamesBtn = document.getElementById("gamesBtn");
-    const userGamesBtn = document.getElementById("userGamesBtn");
-    const backToQuizBtn = document.getElementById("backToQuizBtn");
+    document.getElementById("gamesBtn")?.addEventListener("click", () => switchScreen("gamesScreen"));
+    document.getElementById("userGamesBtn")?.addEventListener("click", () => switchScreen("gamesScreen"));
+    document.getElementById("backToQuizBtn")?.addEventListener("click", () => switchScreen("startScreen"));
 
-    if (gamesBtn) gamesBtn.addEventListener("click", () => switchScreen("gamesScreen"));
-    if (userGamesBtn) userGamesBtn.addEventListener("click", () => switchScreen("gamesScreen"));
-    if (backToQuizBtn) backToQuizBtn.addEventListener("click", () => switchScreen("startScreen"));
-
-    // --- Game selection buttons ---
     document.querySelectorAll(".play-game-btn").forEach(btn => {
         btn.addEventListener("click", async () => {
             const gameType = btn.dataset.game;
@@ -129,54 +101,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // --- Game room actions ---
-    const leaveGameBtn = document.getElementById("leaveGameBtn");
-    const shareRoomBtn = document.getElementById("shareRoomBtn");
-    const replayGameBtn = document.getElementById("replayGameBtn");
-    const quitGameBtn = document.getElementById("quitGameBtn");
-
-    if (leaveGameBtn) leaveGameBtn.addEventListener("click", leaveGame);
-    if (shareRoomBtn) shareRoomBtn.addEventListener("click", shareRoom);
-    if (replayGameBtn) replayGameBtn.addEventListener("click", replayGame);
-    if (quitGameBtn) quitGameBtn.addEventListener("click", leaveGame);
+    document.getElementById("leaveGameBtn")?.addEventListener("click", () => showGameMessage("You left the game", "info"));
+    document.getElementById("shareRoomBtn")?.addEventListener("click", () => {
+        navigator.clipboard.writeText(window.location.href);
+        showGameMessage("Room link copied to clipboard!", "success");
+    });
+    document.getElementById("replayGameBtn")?.addEventListener("click", () => showGameMessage("Replay not implemented yet.", "warning"));
+    document.getElementById("quitGameBtn")?.addEventListener("click", () => showGameMessage("You left the game", "info"));
 });
-
-// =======================
-// Screen Switching Helper
-// =======================
-function switchScreen(screenId) {
-    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-    const target = document.getElementById(screenId);
-    if (target) target.classList.add("active");
-}
-
-// =======================
-// Game Join Flow
-// =======================
-async function joinGame(gameType) {
-    showGameMessage(`Joining ${gameType} room...`, "info");
-
-    const rooms = await fetchAvailableRooms(gameType);
-    let room;
-    if (rooms.length > 0) {
-        room = rooms[0]; // pick the first available room
-        await updateRoom(gameType, room.room_id, { status: "active", player2: "Guest" });
-    } else {
-        // create a new room
-        const result = await updateRoom(gameType, Date.now().toString(), { status: "waiting", player1: "Guest" });
-        room = { room_id: result.roomId, status: "waiting", player1: "Guest" };
-    }
-
-    // Show room
-    document.getElementById("currentRoomId").textContent = room.room_id;
-    document.getElementById("gameRoomTitle").textContent = gameType === "tictactoe" ? "Tic-Tac-Toe" : "Connect 4";
-    switchScreen("gameRoomScreen");
-
-    // Show board
-    document.getElementById("tictactoeBoard").classList.toggle("hidden", gameType !== "tictactoe");
-    document.getElementById("connect4Board").classList.toggle("hidden", gameType !== "connect4");
-}
-
-
-// Run test
-// testAPIs();
