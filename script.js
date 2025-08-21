@@ -5,7 +5,7 @@ const CONFIG = {
     SHEETS_ID: "1hi_iiN08N0nQ6gVLJPjDzbLIz6lZjCMB75U9Q2GadWk", // your spreadsheet ID
 
     // Google Apps Script Web App URL (replace with your latest deployment URL)
-    APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbziyToqI44kq0JFl3e2Oi3FE52pN0j8i267Ei_jPc3C1DQ9vq5aftnTa4m6HnaLQf94-A/exec",
+    APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbz4sVO7GO_tZr1LrS2CfNkuctdgfbBSVvfL8s4kHp_o9gSbYjI4DXAVz6P1eDkfQY5xZg/exec",
 
     // GIDs for each sheet (from your sheet URLs)
     TOPICS_GID: "0",
