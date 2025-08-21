@@ -5,7 +5,7 @@ const CONFIG = {
     SHEETS_ID: "1hi_iiN08N0nQ6gVLJPjDzbLIz6lZjCMB75U9Q2GadWk", // your spreadsheet ID
 
     // Google Apps Script Web App URL (replace with your latest deployment URL)
-    APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycby1EGLYacvRMftUlS77xg_oNI4KcD_BgVexxaXRluj-nsRyxGoZBZRw8Ozl0QV1rgi0Ng/exec",
+    APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxStNHxkLCMPpbKHtKyIi2q7nuuE5YjWkR6zV1-C07oc7wkB0RqPtRYcLAdFpY7GjIv5g/exec",
     TOPICS_GID: "0",
     QUIZZES_GID: "96315669",
     RESPONSES_GID: "1061310588",
